@@ -1,40 +1,31 @@
 #!/bin/sh
 
-LOG=/var/log/telnet.log
+LOG="/var/log/telnet.log"
 
-echo "[+] Fake CCTV IoT device booting..." >> $LOG
+# ---------------- BOOT BANNER ----------------
+echo "[+] IPCam Booting..." | tee -a $LOG
+echo "Model: IPC-3200" | tee -a $LOG
+echo "Firmware: v3.2.1" | tee -a $LOG
+echo "Linux kernel 3.10.14" | tee -a $LOG
+echo "[SESSION START] id=$(date +%s) time=$(date)" >> $LOG
 
-cat << 'EOF' > /bin/logged-shell
-#!/bin/sh
+# ---------------- FAKE FILESYSTEM ----------------
+mkdir -p /etc/camera /var/log/camera /www
 
-LOG=/var/log/telnet.log
+echo "admin:admin123" > /etc/camera/users.conf
+echo "rtsp://0.0.0.0/live" > /etc/camera/stream.conf
+echo "Camera OK" > /var/log/camera/status.log
 
-echo "============================" >> $LOG
-echo "[SESSION START] $(date)" >> $LOG
+# ---------------- FAKE WEB UI ----------------
+cd /www
+echo "<html><body><h1>IP Camera Web Interface</h1></body></html>" > index.html
+python3 -m http.server 80 >/dev/null 2>&1 &
 
-echo -n "login: "
-read USER
-echo -n "password: "
-read PASS
+# ---------------- TELNET HONEYPOT (SOCAT) ----------------
+# This is rock-solid in Docker
+# Looks like Telnet, gives /bin/sh, never exits
 
-echo "$(date) LOGIN user=$USER pass=$PASS" >> $LOG
-echo "Login successful."
+exec socat \
+  TCP-LISTEN:23,reuseaddr,fork \
+  EXEC:/logger.sh,pty,stderr,setsid,sigint,sane
 
-while true; do
-  printf "# "
-  if ! read cmd; then
-    sleep 1
-    continue
-  fi
-  echo "$(date) CMD: $cmd" >> $LOG
-  sh -c "$cmd"
-done
-EOF
-
-
-chmod +x /bin/logged-shell
-
-# Start telnet daemon in foreground
-telnetd -l /bin/logged-shell
-
-sleep infinity

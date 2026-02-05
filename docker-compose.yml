@@ -4,5 +4,22 @@ services:
     container_name: cctv_honeypot
     ports:
       - "2323:23"
+      - "8080:80"
     volumes:
-      - ./telemetry:/var/log
+      - ./telemetry:/telemetry
+
+  router:
+    build: ./honeypots/router
+    container_name: router_honeypot
+    ports:
+      - "2324:23"
+    volumes:
+      - ./telemetry:/telemetry
+
+  sensor:
+    build: ./honeypots/sensor
+    container_name: sensor_honeypot
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./telemetry:/telemetry

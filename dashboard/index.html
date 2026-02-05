@@ -17,7 +17,7 @@
 
 <table>
   <thead>
-    <tr><th>Session Start</th><th>Commands</th></tr>
+    <tr><th>Device</th><th>Session ID</th><th>Session Start</th><th>Commands</th></tr>
   </thead>
   <tbody id="sessions"></tbody>
 </table>
@@ -37,7 +37,7 @@ fetch("http://localhost:5000/api/sessions")
     const tbody = document.getElementById("sessions");
     data.sessions.forEach(s => {
       const row = document.createElement("tr");
-      row.innerHTML = `<td>${s.start}</td><td>${s.commands.join("<br>")}</td>`;
+      row.innerHTML = `<td>${s.device}</td><td>${s.session_id}</td><td>${s.start}</td><td>${s.commands.join("<br>")}</td>`;
       tbody.appendChild(row);
     });
   });
