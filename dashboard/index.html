@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IoT Honeypot Dashboard</title>
+  <style>
+    body { font-family: Arial; margin: 30px; }
+    .card { display: inline-block; padding: 15px; margin: 10px; border: 1px solid #ccc; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    td, th { border: 1px solid #ccc; padding: 8px; }
+  </style>
+</head>
+<body>
+
+<h1>IoT Honeypot Telemetry</h1>
+
+<div id="metrics"></div>
+
+<table>
+  <thead>
+    <tr><th>Session Start</th><th>Commands</th></tr>
+  </thead>
+  <tbody id="sessions"></tbody>
+</table>
+
+<script>
+fetch("http://localhost:5000/api/sessions")
+  .then(r => r.json())
+  .then(data => {
+    const m = data.metrics;
+    document.getElementById("metrics").innerHTML = `
+      <div class="card">Sessions: ${m.total_sessions}</div>
+      <div class="card">Commands: ${m.total_commands}</div>
+      <div class="card">Unique Cmds: ${m.unique_commands}</div>
+      <div class="card">High-Risk Cmds: ${m.high_risk_commands}</div>
+    `;
+
+    const tbody = document.getElementById("sessions");
+    data.sessions.forEach(s => {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${s.start}</td><td>${s.commands.join("<br>")}</td>`;
+      tbody.appendChild(row);
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,8 @@
+services:
+  cctv:
+    build: ./honeypots/cctv
+    container_name: cctv_honeypot
+    ports:
+      - "2323:23"
+    volumes:
+      - ./telemetry:/var/log

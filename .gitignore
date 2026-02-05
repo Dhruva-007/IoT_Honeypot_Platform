@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Logs (keep structure, not data)
+telemetry/*.log
+
+# Docker
+*.pid
+
+# OS / Editor
+.DS_Store
+*.swp
+
+# Secrets (future-proof)
+.env
