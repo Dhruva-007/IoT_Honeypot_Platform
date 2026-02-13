@@ -4,14 +4,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
     socat \
-    procps \
     && rm -rf /var/lib/apt/lists/*
 
-COPY logger.sh /logger.sh
-RUN chmod +x /logger.sh
-
+COPY fakefs/ /
 COPY start.sh /start.sh
-RUN chmod +x /start.sh
+COPY logger.sh /logger.sh
+
+RUN chmod +x /start.sh /logger.sh
 
 EXPOSE 23
 

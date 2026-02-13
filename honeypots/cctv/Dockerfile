@@ -5,21 +5,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     socat \
     python3 \
-    net-tools \
-    procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Create required directories
-RUN mkdir -p /www /var/log
-
-# Copy startup script
+COPY fakefs/ /
 COPY start.sh /start.sh
-RUN chmod +x /start.sh
-
-# Copy logger shell (CRITICAL)
 COPY logger.sh /logger.sh
-RUN chmod +x /logger.sh
 
-EXPOSE 23 80 554
+RUN chmod +x /start.sh /logger.sh
+
+EXPOSE 23 80 554 8443
 
 CMD ["/start.sh"]

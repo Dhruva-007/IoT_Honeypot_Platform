@@ -4,47 +4,29 @@ LOG="/telemetry/router.log"
 SESSION_ID=$(date +%s)
 
 echo "[SESSION START] id=$SESSION_ID time=$(date)" >> "$LOG"
-echo "Welcome to RouterOS v6.45"
-echo "Type 'help' for available commands."
 
 while true; do
   printf "Router> "
   IFS= read -r cmd || exit
 
-  if [ -z "$(echo "$cmd" | tr -d '[:space:]')" ]; then
-    continue
-  fi
+  [ -z "$(echo "$cmd" | tr -d '[:space:]')" ] && continue
 
   echo "$(date) CMD: $cmd" >> "$LOG"
 
+  sleep $(awk -v min=0.2 -v max=0.8 'BEGIN{srand(); print min+rand()*(max-min)}')
+
   case "$cmd" in
-    help)
-      echo "Available commands:"
-      echo "  show status"
-      echo "  show config"
-      echo "  reboot"
-      echo "  exit"
+    ps)
+      echo "init watchdog telnetd"
       ;;
-    "show status")
+    show*)
       echo "WAN: connected"
-      echo "LAN clients: 5"
-      echo "Uptime: 12 days"
       ;;
-    "show config")
-      echo "admin_password=admin"
-      echo "telnet=enabled"
-      echo "remote_mgmt=enabled"
-      ;;
-    reboot)
-      echo "Rebooting system..."
-      sleep 2
-      ;;
-    exit|quit)
-      echo "Connection closed."
-      exit
+    uname*)
+      echo "RouterOS Embedded Kernel"
       ;;
     *)
-      echo "Unknown command"
+      echo "unknown command"
       ;;
   esac
 done

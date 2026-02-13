@@ -4,37 +4,20 @@ LOG="/telemetry/sensor.log"
 SESSION_ID=$(date +%s)
 
 echo "[SESSION START] id=$SESSION_ID time=$(date)" >> "$LOG"
-echo "SensorNode v1.2 Ready"
-echo "Commands: READ, STATUS, SET MODE, EXIT"
-
-MODE="NORMAL"
 
 while true; do
   printf "sensor> "
   IFS= read -r cmd || exit
 
-  if [ -z "$(echo "$cmd" | tr -d '[:space:]')" ]; then
-    continue
-  fi
+  [ -z "$(echo "$cmd" | tr -d '[:space:]')" ] && continue
 
   echo "$(date) CMD: $cmd" >> "$LOG"
 
+  sleep $(awk -v min=0.2 -v max=0.8 'BEGIN{srand(); print min+rand()*(max-min)}')
+
   case "$cmd" in
-    READ)
-      echo "temperature=26.4C"
-      echo "humidity=61%"
-      ;;
-    STATUS)
-      echo "mode=$MODE"
-      echo "uptime=7200s"
-      ;;
-    "SET MODE ATTACK")
-      MODE="ATTACK"
-      echo "mode changed"
-      ;;
-    EXIT)
-      echo "disconnecting"
-      exit
+    read)
+      echo "temperature=$(shuf -i20-40 -n1)C"
       ;;
     *)
       echo "invalid command"

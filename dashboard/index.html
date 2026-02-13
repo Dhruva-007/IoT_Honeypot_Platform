@@ -1,46 +1,229 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>IoT Honeypot Dashboard</title>
-  <style>
-    body { font-family: Arial; margin: 30px; }
-    .card { display: inline-block; padding: 15px; margin: 10px; border: 1px solid #ccc; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    td, th { border: 1px solid #ccc; padding: 8px; }
-  </style>
+<meta charset="UTF-8">
+<title>Smart City IoT Honeypot Dashboard</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #111827;
+    color: #f3f4f6;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: #1f2937;
+    padding: 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.container {
+    padding: 20px;
+}
+
+.metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: #1f2937;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.card h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+.card p {
+    font-size: 22px;
+    margin: 10px 0 0;
+}
+
+.high-score {
+    background: #7f1d1d !important;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #374151;
+    text-align: left;
+}
+
+th {
+    background: #1f2937;
+}
+
+.section-title {
+    font-size: 18px;
+    margin: 20px 0 10px;
+}
+
+.alert {
+    background: #991b1b;
+    padding: 8px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.refresh-note {
+    text-align: right;
+    font-size: 12px;
+    color: #9ca3af;
+}
+</style>
 </head>
+
 <body>
 
-<h1>IoT Honeypot Telemetry</h1>
+<header>
+Secure the Smart City – IoT Honeypot Platform
+</header>
 
-<div id="metrics"></div>
+<div class="container">
 
+<div class="refresh-note">Auto-refresh every 5 seconds</div>
+
+<!-- METRICS -->
+<div class="metrics" id="metrics"></div>
+
+<!-- SESSIONS -->
+<div class="section-title">Attacker Sessions</div>
 <table>
-  <thead>
-    <tr><th>Device</th><th>Session ID</th><th>Session Start</th><th>Commands</th></tr>
-  </thead>
-  <tbody id="sessions"></tbody>
+<thead>
+<tr>
+<th>Device</th>
+<th>Session Start</th>
+<th>Commands</th>
+</tr>
+</thead>
+<tbody id="sessions"></tbody>
 </table>
 
-<script>
-fetch("http://localhost:5000/api/sessions")
-  .then(r => r.json())
-  .then(data => {
-    const m = data.metrics;
-    document.getElementById("metrics").innerHTML = `
-      <div class="card">Sessions: ${m.total_sessions}</div>
-      <div class="card">Commands: ${m.total_commands}</div>
-      <div class="card">Unique Cmds: ${m.unique_commands}</div>
-      <div class="card">High-Risk Cmds: ${m.high_risk_commands}</div>
-    `;
+<!-- ALERTS -->
+<div class="section-title">Security Alerts</div>
+<div id="alerts"></div>
 
-    const tbody = document.getElementById("sessions");
-    data.sessions.forEach(s => {
-      const row = document.createElement("tr");
-      row.innerHTML = `<td>${s.device}</td><td>${s.session_id}</td><td>${s.start}</td><td>${s.commands.join("<br>")}</td>`;
-      tbody.appendChild(row);
+<!-- IOCS -->
+<div class="section-title">Generated IoCs</div>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Value</th>
+<th>Confidence</th>
+</tr>
+</thead>
+<tbody id="iocs"></tbody>
+</table>
+
+</div>
+
+<script>
+async function fetchData() {
+    const sessionsRes = await fetch("http://localhost:5000/api/sessions");
+    const iocsRes = await fetch("http://localhost:5000/api/iocs");
+    const alertsRes = await fetch("http://localhost:5000/api/alerts");
+
+    const sessionsData = await sessionsRes.json();
+    const iocsData = await iocsRes.json();
+    const alertsData = await alertsRes.json();
+
+    renderMetrics(sessionsData.metrics);
+    renderSessions(sessionsData.sessions);
+    renderIoCs(iocsData);
+    renderAlerts(alertsData);
+}
+
+function renderMetrics(metrics) {
+    const container = document.getElementById("metrics");
+    container.innerHTML = "";
+
+    const scoreClass = metrics.attack_score >= 60 ? "card high-score" : "card";
+
+    const cards = [
+        { title: "Total Sessions", value: metrics.total_sessions },
+        { title: "Total Commands", value: metrics.total_commands },
+        { title: "Unique Commands", value: metrics.unique_commands },
+        { title: "High Risk Commands", value: metrics.high_risk_commands },
+        { title: "Devices Touched", value: metrics.devices_touched },
+        { title: "Attack Score", value: metrics.attack_score, className: scoreClass }
+    ];
+
+    cards.forEach(card => {
+        const div = document.createElement("div");
+        div.className = card.className || "card";
+        div.innerHTML = `<h3>${card.title}</h3><p>${card.value}</p>`;
+        container.appendChild(div);
     });
-  });
+}
+
+function renderSessions(sessions) {
+    const tbody = document.getElementById("sessions");
+    tbody.innerHTML = "";
+
+    sessions.forEach(session => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${session.device}</td>
+            <td>${session.start}</td>
+            <td>${session.commands.join("<br>")}</td>
+        `;
+
+        tbody.appendChild(row);
+    });
+}
+
+function renderIoCs(iocs) {
+    const tbody = document.getElementById("iocs");
+    tbody.innerHTML = "";
+
+    iocs.forEach(ioc => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${ioc.type}</td>
+            <td>${ioc.value}</td>
+            <td>${ioc.confidence}</td>
+        `;
+
+        tbody.appendChild(row);
+    });
+}
+
+function renderAlerts(alerts) {
+    const container = document.getElementById("alerts");
+    container.innerHTML = "";
+
+    alerts.forEach(alert => {
+        const div = document.createElement("div");
+        div.className = "alert";
+        div.innerText = `${alert.type} | ${alert.timestamp}`;
+        container.appendChild(div);
+    });
+}
+
+fetchData();
+setInterval(fetchData, 5000);
 </script>
 
 </body>

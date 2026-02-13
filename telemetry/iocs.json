@@ -1,0 +1,22 @@
+[
+  {
+    "type": "url",
+    "value": "http://evil.com/bot.sh",
+    "confidence": "high"
+  },
+  {
+    "type": "url",
+    "value": "http://malicious.com/payload.sh",
+    "confidence": "high"
+  },
+  {
+    "type": "url",
+    "value": "http://bad.com",
+    "confidence": "high"
+  },
+  {
+    "type": "ip",
+    "value": "1.2.3.4",
+    "confidence": "medium"
+  }
+]

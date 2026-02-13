@@ -1,12 +1,20 @@
 services:
+
   cctv:
     build: ./honeypots/cctv
     container_name: cctv_honeypot
     ports:
       - "2323:23"
       - "8080:80"
+      - "554:554"
+      - "8443:8443"
     volumes:
       - ./telemetry:/telemetry
+    networks:
+      - honeynet
+    cap_drop:
+      - NET_ADMIN
+    restart: unless-stopped
 
   router:
     build: ./honeypots/router
@@ -15,6 +23,11 @@ services:
       - "2324:23"
     volumes:
       - ./telemetry:/telemetry
+    networks:
+      - honeynet
+    cap_drop:
+      - NET_ADMIN
+    restart: unless-stopped
 
   sensor:
     build: ./honeypots/sensor
@@ -23,3 +36,25 @@ services:
       - "1883:1883"
     volumes:
       - ./telemetry:/telemetry
+    networks:
+      - honeynet
+    cap_drop:
+      - NET_ADMIN
+    restart: unless-stopped
+
+  traffic:
+    build: ./honeypots/traffic
+    container_name: traffic_honeypot
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./telemetry:/telemetry
+    networks:
+      - honeynet
+    cap_drop:
+      - NET_ADMIN
+    restart: unless-stopped
+
+networks:
+  honeynet:
+    driver: bridge
