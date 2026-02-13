@@ -2,34 +2,13 @@
 
 LOG="/telemetry/router.log"
 
-DEVICE_ID=$(head -c 6 /dev/urandom | od -An -tx1 | tr -d ' \n')
+MODEL=$(shuf -n1 -e "EdgeRouter-X" "RX-2000" "TP-Link ER7206")
 
-MODEL=$(shuf -n1 <<EOF
-RX-2000
-EdgeRoute-X
-NetCore-AC
-EOF
-)
+echo "[BOOT] Router firmware loading..." >> $LOG
+sleep 1
+echo "[BOOT] Initializing interfaces..." >> $LOG
+sleep 1
 
-FW=$(shuf -n1 <<EOF
-6.45
-6.48.1
-6.44
-EOF
-)
+echo "Router Model: $MODEL" >> $LOG
 
-{
-  echo "[+] Router Boot"
-  echo "Model: $MODEL"
-  echo "Firmware: $FW"
-  echo "DeviceID: $DEVICE_ID"
-} >> "$LOG"
-
-(
-  while true; do
-    echo "$(date) INFO: route check OK" >> "$LOG"
-    sleep 75
-  done
-) &
-
-exec socat TCP-LISTEN:23,reuseaddr,fork EXEC:/logger.sh,pty,stderr,setsid,sigint,sane
+exec socat TCP-LISTEN:23,reuseaddr,fork EXEC:/logger.sh,pty,stderr,setsid,sigint,sane,echo=0

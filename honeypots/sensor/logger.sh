@@ -5,22 +5,28 @@ SESSION_ID=$(date +%s)
 
 echo "[SESSION START] id=$SESSION_ID time=$(date)" >> "$LOG"
 
+echo "Environmental Sensor Ready"
+
 while true; do
-  printf "sensor> "
-  IFS= read -r cmd || exit
+printf "sensor$ "
+IFS= read -r cmd || exit
+[ -z "$cmd" ] && continue
 
-  [ -z "$(echo "$cmd" | tr -d '[:space:]')" ] && continue
+echo "$(date) CMD: $cmd" >> "$LOG"
 
-  echo "$(date) CMD: $cmd" >> "$LOG"
-
-  sleep $(awk -v min=0.2 -v max=0.8 'BEGIN{srand(); print min+rand()*(max-min)}')
-
-  case "$cmd" in
-    read)
-      echo "temperature=$(shuf -i20-40 -n1)C"
-      ;;
-    *)
-      echo "invalid command"
-      ;;
-  esac
+case "$cmd" in
+status)
+echo "Temp: $((RANDOM%10+24))C"
+echo "Humidity: $((RANDOM%20+50))%"
+;;
+publish*)
+echo "MQTT message delivered."
+;;
+uname*)
+echo "Linux sensor 3.4.11 arm GNU/Linux"
+;;
+*)
+sh -c "$cmd" 2>/dev/null || echo "Invalid command"
+;;
+esac
 done

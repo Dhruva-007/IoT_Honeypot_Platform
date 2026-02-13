@@ -5,22 +5,31 @@ SESSION_ID=$(date +%s)
 
 echo "[SESSION START] id=$SESSION_ID time=$(date)" >> "$LOG"
 
+echo "Traffic Control Console"
+
 while true; do
-  printf "traffic> "
-  IFS= read -r cmd || exit
+printf "traffic# "
+IFS= read -r cmd || exit
+[ -z "$cmd" ] && continue
 
-  [ -z "$(echo "$cmd" | tr -d '[:space:]')" ] && continue
+echo "$(date) CMD: $cmd" >> "$LOG"
 
-  echo "$(date) CMD: $cmd" >> "$LOG"
-
-  sleep $(awk -v min=0.2 -v max=0.8 'BEGIN{srand(); print min+rand()*(max-min)}')
-
-  case "$cmd" in
-    status)
-      echo "Signal: GREEN"
-      ;;
-    *)
-      echo "invalid command"
-      ;;
-  esac
+case "$cmd" in
+status)
+echo "Signal Mode: AUTO"
+echo "Cycle: 80 seconds"
+;;
+override*)
+echo "Manual override enabled."
+;;
+logs)
+echo "Last sync: $(date)"
+;;
+uname*)
+echo "Linux traffic 2.6.32 arm GNU/Linux"
+;;
+*)
+sh -c "$cmd" 2>/dev/null || echo "Command not recognized"
+;;
+esac
 done

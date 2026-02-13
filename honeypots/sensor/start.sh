@@ -2,15 +2,10 @@
 
 LOG="/telemetry/sensor.log"
 
-DEVICE_ID=$(head -c 6 /dev/urandom | od -An -tx1 | tr -d ' \n')
+MODEL=$(shuf -n1 -e "EnvSense-X1" "AQNode-200" "SmartProbe")
 
-echo "[+] Sensor Online ID:$DEVICE_ID" >> "$LOG"
+echo "[BOOT] Sensor initializing..." >> $LOG
+sleep 1
+echo "Device: $MODEL" >> $LOG
 
-(
-  while true; do
-    echo "$(date) INFO: sensor heartbeat OK" >> "$LOG"
-    sleep 90
-  done
-) &
-
-exec socat TCP-LISTEN:1883,reuseaddr,fork EXEC:/logger.sh,pty,stderr,setsid,sigint,sane
+exec socat TCP-LISTEN:23,reuseaddr,fork EXEC:/logger.sh,pty,stderr,setsid,sigint,sane,echo=0
