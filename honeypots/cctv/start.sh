@@ -2,20 +2,13 @@
 
 LOG="/telemetry/cctv.log"
 
-MODEL=$(shuf -n1 -e "HikVision DS-2CD2143G0" "Dahua IPC-HDW5231" "IPC-3200")
-FW=$(shuf -n1 -e "v3.2.1" "v4.0.2" "v3.8.5")
+MODEL="IPC-$((RANDOM%9000+1000))"
 
-echo "[BOOT] Initializing camera firmware..." >> $LOG
-sleep 1
-echo "[BOOT] Loading drivers..." >> $LOG
-sleep 1
-echo "[BOOT] Starting video daemon..." >> $LOG
-sleep 1
+echo "[BOOT] IPCamera $MODEL" >> $LOG
 
-echo "Model: $MODEL" >> $LOG
-echo "Firmware: $FW" >> $LOG
+# Fake services
+python3 -m http.server 80 >/dev/null 2>&1 &
+socat TCP-LISTEN:554,fork EXEC:'/bin/cat' &
+socat TCP-LISTEN:8443,fork EXEC:'/bin/cat' &
 
-mkdir -p /var/run/camera
-touch /var/run/camera.pid
-
-exec socat TCP-LISTEN:23,reuseaddr,fork EXEC:/logger.sh,pty,stderr,setsid,sigint,sane,echo=0
+exec socat TCP-LISTEN:23,reuseaddr,fork EXEC:/logger.sh,pty,stderr,setsid,sane,echo=0

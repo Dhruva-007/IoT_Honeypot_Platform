@@ -1,11 +1,4 @@
 #!/bin/sh
+echo "EnvSensor v2.1"
 
-LOG="/telemetry/sensor.log"
-
-MODEL=$(shuf -n1 -e "EnvSense-X1" "AQNode-200" "SmartProbe")
-
-echo "[BOOT] Sensor initializing..." >> $LOG
-sleep 1
-echo "Device: $MODEL" >> $LOG
-
-exec socat TCP-LISTEN:23,reuseaddr,fork EXEC:/logger.sh,pty,stderr,setsid,sigint,sane,echo=0
+exec socat TCP-LISTEN:1883,reuseaddr,fork EXEC:/logger.sh,echo=0

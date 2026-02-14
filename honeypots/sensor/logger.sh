@@ -1,4 +1,5 @@
 #!/bin/sh
+. /network_profile.sh
 
 LOG="/telemetry/sensor.log"
 SESSION_ID=$(date +%s)

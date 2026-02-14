@@ -1,57 +1,53 @@
 #!/bin/sh
+. /network_profile.sh
 
 LOG="/telemetry/cctv.log"
-SESSION_ID=$(date +%s)
 
-UPTIME="$((RANDOM%20+5)) days"
-
-echo "[SESSION START] id=$SESSION_ID time=$(date)" >> "$LOG"
-
-echo "IP Camera Console"
-echo "Linux kernel 3.10.14 (armv7)"
-echo "Uptime: $UPTIME"
-echo ""
-
-fake_ps() {
-echo "PID TTY TIME CMD"
-echo "1 ? 00:00 init"
-echo "32 ? 00:00 camera_daemon"
-echo "58 ? 00:00 rtsp_stream"
-}
+echo "[SESSION START] id=$(date +%s) time=$(date)" >> $LOG
+echo "BusyBox v1.30.1"
 
 while true; do
 printf "# "
-IFS= read -r cmd || exit
+read cmd || exit
 [ -z "$cmd" ] && continue
 
-echo "$(date) CMD: $cmd" >> "$LOG"
-
-sleep 0.$((RANDOM%3+2))
+echo "$(date) CMD: $cmd" >> $LOG
 
 case "$cmd" in
-uname*)
-echo "Linux ipc 3.10.14 armv7l GNU/Linux"
-;;
-uptime)
-echo " $UPTIME"
-;;
-ps)
-fake_ps
-;;
+
 ifconfig)
-echo "eth0 inet 192.168.1.$((RANDOM%200+20))"
+echo "eth0 inet $CCTV_IP"
 ;;
-netstat*)
-echo "tcp 0 0 0.0.0.0:23 LISTEN"
-echo "tcp 0 0 0.0.0.0:554 LISTEN"
+
+"arp -a")
+echo "$ROUTER_IP router"
+echo "$SENSOR_IP sensor"
+echo "$TRAFFIC_IP traffic"
 ;;
-wget*)
+
+nmap*)
+echo "Scanning..."
+sleep 1
+echo "$ROUTER_IP open telnet"
+echo "$SENSOR_IP open mqtt"
+echo "$TRAFFIC_IP open control"
+;;
+
+ps)
+echo "PID CMD"
+echo "1 init"
+echo "55 camera_daemon"
+;;
+
+wget*|curl*)
 echo "Connecting..."
 sleep 1
-echo "Saving to: update.bin"
+echo "Network unreachable"
 ;;
+
 *)
-sh -c "$cmd" 2>/dev/null || echo "sh: command not found"
+sh -c "$cmd" 2>/dev/null || echo "not found"
 ;;
+
 esac
 done

@@ -25,6 +25,8 @@ services:
       - ./telemetry:/telemetry
     networks:
       - honeynet
+    depends_on:
+      - cctv
     cap_drop:
       - NET_ADMIN
     restart: unless-stopped
@@ -38,6 +40,8 @@ services:
       - ./telemetry:/telemetry
     networks:
       - honeynet
+    depends_on:
+      - router
     cap_drop:
       - NET_ADMIN
     restart: unless-stopped
@@ -51,6 +55,8 @@ services:
       - ./telemetry:/telemetry
     networks:
       - honeynet
+    depends_on:
+      - sensor
     cap_drop:
       - NET_ADMIN
     restart: unless-stopped

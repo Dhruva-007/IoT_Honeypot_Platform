@@ -1,4 +1,5 @@
 #!/bin/sh
+. /network_profile.sh
 
 LOG="/telemetry/router.log"
 SESSION_ID=$(date +%s)
