@@ -42,7 +42,7 @@ echo "55 camera_daemon"
 wget*|curl*)
 echo "Connecting..."
 sleep 1
-echo "Network unreachable"
+echo "Downloaded"
 ;;
 
 *)

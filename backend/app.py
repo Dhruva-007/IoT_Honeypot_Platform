@@ -4,7 +4,8 @@ from pathlib import Path
 import re
 import uuid
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -25,6 +26,44 @@ HIGH_RISK = ["wget", "curl", "nc", "busybox", "chmod", "rm"]
 IOC_OUTPUT = LOG_DIR / "iocs.json"
 ALERT_OUTPUT = LOG_DIR / "alerts.json"
 
+# -------------------- TIMEZONE (UTC → IST) --------------------
+
+IST = timezone(timedelta(hours=5, minutes=30))
+
+def utc_to_ist_string(utc_string):
+    try:
+        dt = datetime.fromisoformat(utc_string.replace("Z", ""))
+        dt = dt.replace(tzinfo=timezone.utc).astimezone(IST)
+        return dt.strftime("%Y-%m-%d %H:%M:%S IST")
+    except:
+        return utc_string
+
+# -------------------- GEO LOCATION --------------------
+
+geo_cache = {}
+
+def geo_lookup(ip):
+    if not ip or ip == "local":
+        return {"country": "Local", "city": "-", "isp": "-"}
+
+    if ip in geo_cache:
+        return geo_cache[ip]
+
+    try:
+        r = requests.get(f"http://ip-api.com/json/{ip}", timeout=2)
+        data = r.json()
+
+        result = {
+            "country": data.get("country", "Unknown"),
+            "city": data.get("city", "Unknown"),
+            "isp": data.get("isp", "Unknown")
+        }
+
+        geo_cache[ip] = result
+        return result
+    except:
+        return {"country": "Unknown", "city": "-", "isp": "-"}
+
 # -------------------- UTILITIES --------------------
 
 def read_log(path):
@@ -42,6 +81,7 @@ def extract_urls(line):
 
 def parse_all_devices():
     sessions = []
+
     metrics = {
         "total_sessions": 0,
         "total_commands": 0,
@@ -57,17 +97,29 @@ def parse_all_devices():
         lines = read_log(path)
 
         current = None
+        attacker_ip = "local"
 
         for line in lines:
+
+            # Capture IP if present
+            ips_found = extract_ips(line)
+            if ips_found:
+                attacker_ip = ips_found[0]
 
             if "[SESSION START]" in line:
                 if current:
                     sessions.append(current)
+
+                geo = geo_lookup(attacker_ip)
+
                 current = {
                     "device": device,
                     "start": line,
-                    "commands": []
+                    "commands": [],
+                    "ip": attacker_ip,
+                    "geo": geo
                 }
+
                 metrics["devices_touched"].add(device)
 
             elif "CMD:" in line and current:
@@ -84,7 +136,7 @@ def parse_all_devices():
                         "type": "HIGH_RISK_COMMAND",
                         "device": device,
                         "command": cmd,
-                        "timestamp": str(datetime.utcnow())
+                        "timestamp": utc_to_ist_string(datetime.utcnow().isoformat())
                     })
 
                 # URL IoC
@@ -95,7 +147,7 @@ def parse_all_devices():
                         "confidence": "high"
                     })
 
-            # IP IoC
+            # IP IoC extraction
             for ip in extract_ips(line):
                 iocs.append({
                     "type": "ip",
@@ -118,7 +170,7 @@ def parse_all_devices():
         alerts.append({
             "type": "MULTI_DEVICE_ATTACK",
             "devices": list(metrics["devices_touched"]),
-            "timestamp": str(datetime.utcnow())
+            "timestamp": utc_to_ist_string(datetime.utcnow().isoformat())
         })
 
     if metrics["total_commands"] >= 5:
@@ -126,14 +178,14 @@ def parse_all_devices():
         alerts.append({
             "type": "PERSISTENCE_BEHAVIOR",
             "command_count": metrics["total_commands"],
-            "timestamp": str(datetime.utcnow())
+            "timestamp": utc_to_ist_string(datetime.utcnow().isoformat())
         })
 
     if score >= 60:
         alerts.append({
             "type": "HIGH_THREAT_SCORE",
             "score": score,
-            "timestamp": str(datetime.utcnow())
+            "timestamp": utc_to_ist_string(datetime.utcnow().isoformat())
         })
 
     metrics["attack_score"] = score
@@ -141,7 +193,7 @@ def parse_all_devices():
     metrics["unique_commands"] = len(metrics["unique_commands"])
     metrics["devices_touched"] = len(metrics["devices_touched"])
 
-    # Save IoCs & Alerts
+    # Save outputs
     IOC_OUTPUT.write_text(json.dumps(iocs, indent=2))
     ALERT_OUTPUT.write_text(json.dumps(alerts, indent=2))
 
@@ -153,10 +205,13 @@ def generate_stix_bundle(iocs):
     objects = []
 
     for ioc in iocs:
+
         if ioc["type"] == "ip":
             pattern = f"[ipv4-addr:value = '{ioc['value']}']"
+
         elif ioc["type"] == "url":
             pattern = f"[url:value = '{ioc['value']}']"
+
         else:
             continue
 

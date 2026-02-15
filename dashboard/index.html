@@ -89,6 +89,11 @@ th {
     font-size: 12px;
     color: #9ca3af;
 }
+
+.geo {
+    font-size: 12px;
+    color: #93c5fd;
+}
 </style>
 </head>
 
@@ -111,7 +116,8 @@ Secure the Smart City – IoT Honeypot Platform
 <thead>
 <tr>
 <th>Device</th>
-<th>Session Start</th>
+<th>Session Start (IST)</th>
+<th>Geo Location</th>
 <th>Commands</th>
 </tr>
 </thead>
@@ -157,7 +163,8 @@ function renderMetrics(metrics) {
     const container = document.getElementById("metrics");
     container.innerHTML = "";
 
-    const scoreClass = metrics.attack_score >= 60 ? "card high-score" : "card";
+    const scoreClass =
+        metrics.attack_score >= 60 ? "card high-score" : "card";
 
     const cards = [
         { title: "Total Sessions", value: metrics.total_sessions },
@@ -181,11 +188,17 @@ function renderSessions(sessions) {
     tbody.innerHTML = "";
 
     sessions.forEach(session => {
+
+        const geo = session.geo
+            ? `${session.geo.country}<br>${session.geo.city}<br><span class="geo">ISP: ${session.geo.isp}</span>`
+            : "-";
+
         const row = document.createElement("tr");
 
         row.innerHTML = `
             <td>${session.device}</td>
             <td>${session.start}</td>
+            <td>${geo}</td>
             <td>${session.commands.join("<br>")}</td>
         `;
 

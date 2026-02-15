@@ -31,6 +31,21 @@
   },
   {
     "type": "url",
+    "value": "http://malicious.site/bot.sh",
+    "confidence": "high"
+  },
+  {
+    "type": "url",
+    "value": "http://malicious.site/payload.sh",
+    "confidence": "high"
+  },
+  {
+    "type": "url",
+    "value": "http://malicious.sit/payload.sh",
+    "confidence": "high"
+  },
+  {
+    "type": "url",
     "value": "http://malicious.sit/payload.sh",
     "confidence": "high"
   }
